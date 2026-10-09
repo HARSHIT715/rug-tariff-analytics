@@ -173,7 +173,7 @@ const CH={},mk=(id,cfg)=>{CH[id]&&CH[id].destroy();CH[id]=new Chart($(id),cfg)};
 let M=[],S=[],sel=0,sk='m1',sd=1;
 function draw(){
   const n=M.length,r=Math.min(+$('range').value,n),pf=$('pf').checked,q=$('q').value.toLowerCase(),L=S.filter(s=>!pf||s.pf);
-  if(n<3||!L.length)return;
+  if(!n||!S.length)return;
   if(!L.includes(S[sel]))sel=S.indexOf(L[0]);
   $('tg').textContent=dark()?'Light mode':'Dark mode';
   $('drug').innerHTML=L.map(s=>{const i=S.indexOf(s);return`<option value="${i}"${i===sel?' selected':''}>${esc(s.n)} (${esc(s.pk)})</option>`}).join('');
@@ -183,11 +183,11 @@ function draw(){
   $('hh').textContent=(HP.length?'Portfolio':'Market')+' price index';
   $('hs').innerHTML=[[pc(hi[hi.length-1]/100-1),`${hi.length-1}-month price change`],[HS.filter(x=>x.cn[n-1]).length,'In concession now'],[mvs(HS),'Category changes, 6 months']].map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
   /* kpis */
-  const ch=L.map(x=>x.pr[n-1]/x.pr[n-2]-1);
-  $('kpis').innerHTML=[[L.length,'Products tracked'],[pc(med(ch)),`Median price change, ${M[n-1]} vs ${M[n-2]}`],[L.filter(x=>x.cn[n-1]).length,`Products in concession, ${M[n-1]}`],[mvs(L),'Category changes, last 6 months']].map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
+  const ch=n>1?L.map(x=>x.pr[n-1]/x.pr[n-2]-1).filter(Number.isFinite):[];
+  $('kpis').innerHTML=[[L.length,'Products tracked'],[ch.length?pc(med(ch)):'–',n>1?`Median price change, ${M[n-1]} vs ${M[n-2]}`:'Price change unavailable — upload another month'],[L.filter(x=>x.cn[n-1]).length,`Products in concession, ${M[n-1]}`],[mvs(L),'Category changes, last 6 months']].map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join('');
   /* alerts */
   const al=[];
-  L.forEach(p=>{const c=p.pr[n-1]/p.pr[n-2]-1,m=esc(p.n);
+  if(n>1)L.forEach(p=>{const c=p.pr[n-1]/p.pr[n-2]-1,m=esc(p.n);
     if(c<=-.05)al.push([1+Math.abs(c),'--down',`${m}: price down ${(-c*100).toFixed(1)}% to ${fmt(p.pr[n-1])}`]);
     if(p.ct[n-1]!==p.ct[n-2])al.push([.6,'--A',`${m}: moved from Category ${p.ct[n-2]} to ${p.ct[n-1]}`]);
     if(p.cn[n-1]&&!p.cn[n-2])al.push([.5,'--C',`${m}: entered price concession`])});
