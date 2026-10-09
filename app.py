@@ -1,5 +1,7 @@
 
 """Drug Tariff Analytics website with a protected admin panel."""
+import csv
+import io
 import hmac
 import json
 import os
@@ -134,6 +136,37 @@ def api_data():
         **SAMPLE,
         "meta": {"source": "sample"},
     })
+
+
+# Export the product history currently shown by the dashboard.
+@app.get("/api/export.csv")
+def export_csv():
+    data = live_data() or SAMPLE
+    output = io.StringIO(newline="")
+    writer = csv.writer(output)
+    writer.writerow(["product", "pack_size", "month", "price_gbp", "category", "concession", "in_portfolio"])
+    for product in data.get("products", []):
+        months = data.get("months", [])
+        prices = product.get("pr", [])
+        categories = product.get("ct", [])
+        concessions = product.get("cn", [])
+        for index, month in enumerate(months):
+            if index >= len(prices):
+                continue
+            writer.writerow([
+                product.get("n", ""),
+                product.get("pk", ""),
+                month,
+                prices[index],
+                categories[index] if index < len(categories) else "",
+                concessions[index] if index < len(concessions) else False,
+                product.get("pf", False),
+            ])
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": 'attachment; filename="drug-tariff-history.csv"'},
+    )
 
 
 # Public status endpoint (does not reveal credentials)

@@ -1,106 +1,97 @@
-# 💊 Drug Tariff Analytics Dashboard
+# Drug Tariff Analytics
 
-### NHS Drug Tariff Price Monitoring for Dr. Reddy's Laboratories
+A Flask dashboard for exploring NHS Drug Tariff price trends, category movements and price concessions, with a protected admin area for monthly uploads and Dr. Reddy's portfolio tracking.
 
-A Flask-based analytics dashboard for monitoring NHS Drug Tariff reimbursement prices, reviewing price movements and concessions, and highlighting changes relevant to a configured Dr. Reddy's product portfolio.
+**Live dashboard:** https://drug-tariff-analytics.onrender.com
 
-<p align="center">
-  <a href="https://drug-tariff-analytics.onrender.com/">
-    <img src="https://img.shields.io/badge/LIVE_DEMO-Open_Website-2ea44f?style=for-the-badge" alt="Live Demo">
-  </a>
-  <img src="https://img.shields.io/badge/Python-Flask-blue?style=for-the-badge&logo=python" alt="Python Flask">
-  <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite" alt="SQLite">
-  <img src="https://img.shields.io/badge/Hosting-Render-5A67D8?style=for-the-badge" alt="Render">
-</p>
+> **Data note:** Until real tariff files are uploaded, the dashboard displays illustrative sample data. Sample figures are not official NHS reimbursement prices.
 
----
+## Features
 
-## ✨ Key Features
+- Interactive price trends and market/portfolio comparisons
+- Category A, C and M movement indicators
+- Price-concession flags and alerts
+- Searchable product explorer and CSV export
+- Admin-only CSV/XLSX upload workflow
+- Header-row detection for files that start with a report title or metadata
+- SQLite record of processed tariff rows and dashboard JSON output
+- Basic authentication for admin pages plus a separate admin action token
+- Automated tests through GitHub Actions
 
-* 📊 **Price Analytics** — Review drug reimbursement prices and price movements.
-* 📈 **Trend Monitoring** — Compare changes across monthly tariff datasets.
-* 🏷️ **Category Analysis** — Review movements across tariff categories.
-* 💷 **Price Concessions** — Process concession information when a suitable file is provided.
-* 🔔 **Change Monitoring** — Highlight important price movements shown by the application.
-* 🎯 **Portfolio Tracking** — Prioritize products matching the configured portfolio list.
-* 📂 **Monthly Uploads** — Upload tariff files through the protected admin page.
-* 🔐 **Admin Authentication** — Protect administrative pages with configured credentials.
+## Project structure
 
-## 🛠️ Technology Stack
+| Path | Purpose |
+| --- | --- |
+| `app.py` | Flask routes, admin authentication, upload validation and CSV export |
+| `pipeline.py` | Reads monthly files, normalizes data, calculates changes and builds dashboard output |
+| `sample.py` | Clearly illustrative data for the empty-state dashboard |
+| `web/index.html` | Public dashboard |
+| `web/admin.html` | Protected admin upload and portfolio page |
+| `test_pipeline.py` | Parser and data validation tests |
+| `test_app.py` | Flask route, authentication and upload tests |
+| `.github/workflows/tests.yml` | Automated test workflow |
+| `render.yaml` | Render deployment configuration |
 
-| Technology            | Purpose                               |
-| --------------------- | ------------------------------------- |
-| Python                | Application logic and data processing |
-| Flask                 | Web application and API               |
-| SQLite                | Structured data storage               |
-| HTML, CSS, JavaScript | Dashboard interface                   |
-| Render                | Cloud hosting and deployment          |
-| GitHub                | Source control and project hosting    |
+## Admin setup
 
-## ⚙️ How It Works
+In the Render service's **Environment** settings, configure these variables:
 
-1. **Upload:** An authorized administrator uploads a monthly Drug Tariff file.
-2. **Process:** The Python pipeline reads and processes the supplied data.
-3. **Analyze:** The application calculates price changes and organizes the results.
-4. **Store:** Processed information is saved in SQLite and generated JSON data.
-5. **Visualize:** The dashboard presents available trends, category movements, concessions, and portfolio-related results.
+- `ADMIN_USERNAME` — admin login username
+- `ADMIN_PASSWORD` — admin login password
+- `ADMIN_TOKEN` — separate token required for upload and portfolio changes
 
-## 🗂️ Project Structure
+Keep all three values private. Do not commit them to GitHub or put them in screenshots. If a credential is exposed, rotate it in Render.
 
-| File               | Description                                                        |
-| ------------------ | ------------------------------------------------------------------ |
-| `app.py`           | Flask server, website routes, JSON API, and protected admin routes |
-| `pipeline.py`      | Processes monthly tariff files and generates analytics data        |
-| `sample.py`        | Illustrative data displayed before real data is uploaded           |
-| `web/index.html`   | Public dashboard interface                                         |
-| `web/admin.html`   | Admin upload interface and portfolio editor                        |
-| `render.yaml`      | Render deployment blueprint                                        |
-| `requirements.txt` | Python dependencies                                                |
+Open `/admin` on the live site. The browser first asks for the username and password. Then enter the `ADMIN_TOKEN` into the form to upload a file or update the portfolio list.
 
-## 🌐 Live Website
+## Uploading monthly data
 
-**[Open Drug Tariff Analytics Dashboard](https://drug-tariff-analytics.onrender.com/)**
+1. Download the appropriate official monthly Drug Tariff data file from NHSBSA.
+2. In `/admin`, select **Drug Tariff prices** or **Price concessions**, select the month, choose a CSV or XLSX file and submit.
+3. Check the response message and the data status before assuming the upload succeeded.
+4. Confirm the public dashboard shows live data and the correct latest month.
 
-The dashboard may display sample data until a valid monthly Drug Tariff file has been uploaded and processed.
+The parser scans the first 15 rows for a header and supports common variations of product, pack, price and category column names. Some NHSBSA exports use different layouts or category-specific files; those may still require an explicit mapping. Always compare the processed figures with the official source before using them for decisions.
 
-## 🚀 Deployment
+Prices are currently interpreted as pence and converted to pounds. If your source file already expresses prices in pounds, update `PRICE_IN_PENCE` in `pipeline.py` before uploading it.
 
-This project is hosted on Render and connected to GitHub.
+## Deployment
 
-For deployment, configure the following:
+The project is configured for Render with Gunicorn. The service health check is `/healthz`.
 
-* **Build command:** `pip install -r requirements.txt`
-* **Start command:** `gunicorn app:app --workers 1 --threads 4 --timeout 120`
-* **Environment variables:** `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_TOKEN`
+1. Push the project to the connected GitHub repository.
+2. Let Render build and deploy the latest commit.
+3. Confirm `/healthz` returns `ok`.
+4. Visit the public dashboard and check that `/admin` requires login.
+5. Upload a small known test file and confirm the dashboard data changes.
 
-Use strong, unique secrets and configure them in Render's Environment settings. Never commit credentials or tokens to GitHub.
+## Storage limitation
 
-## ⚠️ Limitations
+The default Render free web service does **not** provide a persistent disk. Files in the service's local filesystem may be lost when the service restarts or redeploys, so the current SQLite database, uploaded files and generated dashboard JSON should not be treated as permanent history on the free plan.
 
-* Drug Tariff file layouts and column headers can vary between releases.
-* Concession matching depends on product-name wording and the supplied file structure.
-* The dashboard displays up to 60 products, prioritizing configured portfolio products.
-* Render's free service may sleep after inactivity.
-* Free hosting does not provide persistent disk storage by default. Uploaded files and database contents may be lost after a restart or redeploy unless persistent storage is configured.
+For persistent history, configure a Render persistent disk on a plan that supports it and set `DATA_DIR` to the disk's mount path (for example `/var/data`). Ensure the disk is mounted at that path before deploying. Do not enable this configuration unless the service has the disk attached.
 
-## 🗺️ Future Improvements
+## Tests
 
-* [ ] Improve CSV and Excel header detection.
-* [ ] Add stronger upload validation and clearer error messages.
-* [ ] Expand historical comparisons across monthly datasets.
-* [ ] Add downloadable analytics reports.
-* [ ] Provide more detailed portfolio-level insights.
-* [ ] Configure persistent storage.
-* [ ] Expand automated tests.
+For development and CI, install the development dependencies:
 
-## 🔒 Security
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```
 
-* Keep `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_TOKEN` private.
-* Store secrets in Render Environment settings, not in source code.
-* Never publish credentials in screenshots, issues, or public commits.
+GitHub Actions runs the test suite on pushes and pull requests.
 
----
+## Current limitations
 
-<p align="center">
-  Built with Python and Flask.
-</p>
+- The dashboard visualizes up to 60 products at a time; the underlying SQLite table stores all processed rows.
+- Concession matching currently compares normalized product names and may miss wording differences.
+- Price comparisons are only as reliable as the source file's columns, units and selected month.
+- Persistent data retention requires persistent storage to be configured on the hosting platform.
+
+## Roadmap
+
+- Store uploaded files and processed history on persistent storage
+- Add a month-by-month comparison view and downloadable filtered reports
+- Improve concession matching and file-specific column mappings
+- Add deployment smoke tests and more coverage for real NHSBSA file variants
