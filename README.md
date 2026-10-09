@@ -1,40 +1,90 @@
-# Drug Tariff Analytics Website
-
-🌐 **Live Website:** https://drug-tariff-analytics.onrender.com# Drug Tariff Analytics Website
-
-A Flask website that monitors NHS Drug Tariff reimbursement prices for Dr. Reddy's Laboratories: price trends, category movements, concessions and alerts. It shows sample data until you upload real monthly files on the Admin page.
-
-## What is inside
-
-| Path | Role |
-|---|---|
-| `app.py` | Flask server: the site, the JSON API, and the token-protected admin routes |
-| `pipeline.py` | Cleans monthly Drug Tariff files, calculates changes, writes SQLite and the JSON the site reads |
-| `sample.py` | Illustrative data shown before any upload |
-| `web/index.html` | The dashboard website |
-| `web/admin.html` | Upload page and portfolio list |
-| `render.yaml` | Render deployment blueprint |
-
-## Deploy on Render
-
-1. Create a GitHub repository and push this folder:
-   `git init && git add . && git commit -m "Drug Tariff site" && git branch -M main && git remote add origin <your-repo-url> && git push -u origin main`
-2. In Render, choose **New** then **Blueprint**, connect the repository and apply. Render reads `render.yaml` and builds the service.
-   (Or choose **New** then **Web Service** and set build command `pip install -r requirements.txt` and start command `gunicorn app:app --workers 1 --threads 4 --timeout 120`.)
-3. When the deploy finishes, your site is at `https://<service-name>.onrender.com`.
-4. Open the service's **Environment** tab and copy the generated `ADMIN_TOKEN`. You need it on the Admin page.
-5. Go to `/admin`, upload each month's Drug Tariff file (and optionally the concessions file), and add your portfolio product names. The dashboard updates straight away.
-
-## Free plan limits
-
-- A free service goes to sleep after 15 minutes without traffic, so the first visit afterwards takes about a minute to wake.
-- The free plan has no persistent disk. Uploaded files and the database are lost whenever the service restarts or redeploys, and the site goes back to sample data. To keep data, use a paid plan, add a disk in `render.yaml` and set `DATA_DIR` to its mount path (see the comments in that file).
-
-
-## Things to check
-
-- Column headers differ between Drug Tariff releases. If an upload is rejected for a missing column, extend the `COLS` lists in `pipeline.py`.
-- The Admin page asks for a month because the pipeline reads it from the file name (`drug_tariff_YYYY-MM`).
-- Concessions are matched to tariff lines by product name, so wording differences can cause misses.
-- The dashboard shows up to 60 products (portfolio first, then biggest movers). The database keeps everything.
-- Keep `ADMIN_TOKEN` private. Anyone with it can replace your data.
+💊 Drug Tariff Analytics Dashboard
+NHS Drug Tariff Price Monitoring for Dr. Reddy's Laboratories
+A Flask-based analytics dashboard for monitoring NHS Drug Tariff reimbursement prices, reviewing price movements and concessions, and highlighting changes relevant to a configured Dr. Reddy's product portfolio.
+<p align="center">
+  <a href="https://drug-tariff-analytics.onrender.com">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-Open_Website-2ea44f?style=for-the-badge" alt="Live Demo">
+  </a>
+  <img src="https://img.shields.io/badge/Python-Flask-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python Flask">
+  <img src="https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite">
+  <img src="https://img.shields.io/badge/Hosting-Render-5A67D8?style=for-the-badge" alt="Render">
+</p>
+<p align="center">
+  <strong>🚀 Live Website:</strong>
+  <a href="https://drug-tariff-analytics.onrender.com">drug-tariff-analytics.onrender.com</a>
+</p>
+---
+📸 Dashboard Preview
+<!-- Add a real screenshot of your deployed dashboard to the repository at screenshots/dashboard.png, then uncomment the next line. -->
+<!-- ![Drug Tariff Analytics Dashboard](screenshots/dashboard.png) -->
+To add a preview, create a `screenshots` folder in this repository, upload a screenshot named `dashboard.png`, and uncomment the image line above.
+✨ Key Features
+📊 Price Analytics — review drug reimbursement prices and price movements.
+📈 Trend Monitoring — compare changes across monthly tariff datasets.
+🏷️ Category Analysis — review movements across tariff categories.
+💷 Price Concessions — process concession information when a suitable file is provided.
+🔔 Change Monitoring — highlight important price movements shown by the application.
+🎯 Portfolio Tracking — prioritize products matching the configured portfolio list.
+📂 Monthly Data Uploads — upload tariff files through the protected admin page.
+🔐 Admin Authentication — protect administrative pages with configured credentials.
+🗄️ Data Processing — process tariff data using Python and store results for the dashboard.
+🛠️ Technology Stack
+Technology	Purpose
+Python	Application logic and data processing
+Flask	Web application and API
+SQLite	Structured data storage
+HTML, CSS, JavaScript	Dashboard interface
+Pandas	Tabular data processing, if used by the pipeline
+Render	Cloud hosting and deployment
+GitHub	Source control and project hosting
+⚙️ How It Works
+Upload: An authorized administrator uploads a monthly Drug Tariff file.
+Process: The Python pipeline reads and processes the supplied data.
+Analyze: The application calculates price changes and organizes the results.
+Store: Processed information is saved in SQLite and generated JSON data.
+Visualize: The public dashboard presents the available trends, category movements, concessions, and portfolio-related results.
+🗂️ Project Structure
+Path	Role
+`app.py`	Flask server, website routes, JSON API, and protected admin routes
+`pipeline.py`	Processes monthly tariff files and generates analytics data
+`sample.py`	Illustrative data displayed before real data is uploaded
+`web/index.html`	Public dashboard interface
+`web/admin.html`	Admin upload interface and portfolio editor
+`render.yaml`	Render deployment blueprint
+`requirements.txt`	Python dependencies
+`README.md`	Project documentation
+🌐 Live Demo
+Public dashboard: https://drug-tariff-analytics.onrender.com
+The public dashboard may show sample data until a valid monthly Drug Tariff file has been uploaded and processed.
+The admin panel is available at `/admin` on the deployed site and requires the configured login credentials. Keep admin credentials and tokens private; do not commit them to GitHub.
+🚀 Deployment
+This project is deployed on Render and linked to its GitHub repository.
+For a new deployment:
+Push the project to a GitHub repository.
+In Render, create a Web Service or deploy the included Blueprint if your `render.yaml` is configured for it.
+Set the build command to `pip install -r requirements.txt`.
+Set the start command to `gunicorn app:app --workers 1 --threads 4 --timeout 120`, if this matches your deployment configuration.
+Configure the environment variables `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_TOKEN` in Render. Use strong, unique values and never publish them in this README.
+Deploy and open the public dashboard URL above.
+⚠️ Limitations
+Drug Tariff file layouts and column headers can vary between releases. Uploads may require the processing pipeline to be updated for the exact file format.
+Concession matching depends on product-name wording and the structure of the supplied concession file.
+The dashboard displays up to 60 products, with configured portfolio products prioritized, while the database may retain more processed products.
+Render's free web service can sleep after inactivity, so the first visit after a period without traffic may take longer to load.
+Free hosting does not provide persistent disk storage by default. Uploaded files and database contents may be lost after a restart or redeploy unless persistent storage is configured and the app's `DATA_DIR` points to it.
+🗺️ Future Improvements
+[ ] Improve CSV and Excel header detection for different Drug Tariff formats.
+[ ] Add stronger validation and clearer upload error messages.
+[ ] Expand historical comparisons across monthly datasets.
+[ ] Add downloadable analytics reports.
+[ ] Provide more detailed portfolio-level insights.
+[ ] Configure persistent storage for reliable long-term data retention.
+[ ] Expand automated tests for data processing and API routes.
+🔒 Security
+Keep `ADMIN_USERNAME`, `ADMIN_PASSWORD`, and `ADMIN_TOKEN` private.
+Store secrets in Render's Environment settings rather than in source code.
+Never paste credentials or tokens into issues, screenshots, or public commits.
+---
+<p align="center">
+  Built with Python, Flask, and a focus on practical drug tariff analytics.
+</p>
