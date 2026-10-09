@@ -18,7 +18,6 @@ DB = DATA / "tariff.db"
 OUT = DATA / "dashboard.json"
 PORTFOLIO = DATA / "portfolio.txt"
 PRICE_IN_PENCE = True
-MAX_PRODUCTS = 60
 
 COLS = {
     "product": [
@@ -241,7 +240,7 @@ def export(prices: pd.DataFrame) -> dict:
     keys = portfolio_keys + other_keys
 
     products = []
-    for key in keys[:MAX_PRODUCTS]:
+    for key in keys:
         products.append({
             "n": str(meta.at[key, "product"]),
             "pk": str(meta.at[key, "pack"]),
