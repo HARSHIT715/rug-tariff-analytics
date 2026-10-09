@@ -214,9 +214,17 @@ function draw(){
   const H=[['n','Product'],['ct','Category'],['price','Price'],['m1','1 month'],['m6','6 months'],['m12','12 months']];
   $('th2').innerHTML='<tr>'+H.map(([k,l],j)=>`<th class="${j>1?'num':''}"><button class="sk" data-k="${k}">${l}${sk===k?(sd>0?' ▲':' ▼'):''}</button></th>`).join('')+'<th class="num">Trend</th></tr>';
   $('tb').innerHTML=rs.map(({p,i,n:nm,ct:c,price,m1,m6,m12})=>`<tr class="${i===sel?'sel':''}"><td><button class="lnk" data-i="${i}">${esc(nm)}</button><small>${esc(p.pk)} pack</small></td><td><span class="b ${c}">Category ${c}</span>${p.cn[n-1]?'<span class="tag">Concession</span>':''}</td><td class="num">${fmt(price)}</td><td class="num ${cl(m1)}">${pc(m1)}</td><td class="num ${cl(m6)}">${pc(m6)}</td><td class="num ${cl(m12)}">${pc(m12)}</td><td class="num ${cl(p.pr[n-1]-p.pr[Math.max(0,n-r)])}">${spark(p.pr.slice(-r))}</td></tr>`).join('')||'<tr><td colspan="7">No products match that search.</td></tr>';
-  /* lane */
-  const cols=`170px repeat(${r},minmax(18px,1fr))`;
-  $('lane').innerHTML=`<div class="lr lh" style="grid-template-columns:${cols}"><span></span>${lb.map((m,i)=>`<span>${i%3?'':m}</span>`).join('')}</div>`+L.map(p=>{const i=S.indexOf(p),pp=p.pr.slice(-r),cc=p.cn.slice(-r);return`<div class="lr" style="grid-template-columns:${cols}"><button data-i="${i}" class="${i===sel?'on':''}">${esc(p.n)}</button>${p.ct.slice(-r).map((c,j)=>`<i class="c ${c}${cc[j]?' k':''}" title="${lb[j]}: Category ${c}, ${fmt(pp[j])}"></i>`).join('')}</div>`}).join('');
+  /* lane — compact category timeline */
+  const laneMatches = L.filter(p => !q || p.n.toLowerCase().includes(q));
+  const laneProducts = laneMatches.slice(0, 30);
+  const cols = `170px repeat(${r},minmax(18px,1fr))`;
+  $('lane').innerHTML =
+    `<p class="cap">Showing ${laneProducts.length} of ${laneMatches.length} matching products. Use Product explorer search to find a specific product.</p>` +
+    `<div class="lr lh" style="grid-template-columns:${cols}"><span>Product</span>${lb.map((m,i)=>`<span>${i%3===0?esc(m):''}</span>`).join('')}</div>` +
+    (laneProducts.length ? laneProducts.map(p => {
+      const i = S.indexOf(p), pp = p.pr.slice(-r), cc = p.cn.slice(-r);
+      return `<div class="lr" style="grid-template-columns:${cols}"><button data-i="${i}" class="${i===sel?'on':''}" title="${esc(p.n)}">${esc(p.n)}</button>${p.ct.slice(-r).map((c,j)=>`<i class="c ${c}${cc[j]?' k':''}" title="${esc(lb[j])}: Category ${esc(c)}, ${fmt(pp[j])}"></i>`).join('')}</div>`;
+    }).join('') : '<p class="cap">No matching products. Try another search.</p>');
 }
 document.addEventListener('click',e=>{
   const b=e.target.closest('button[data-i]'),h=e.target.closest('.sk');
