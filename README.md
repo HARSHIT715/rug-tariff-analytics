@@ -30,13 +30,6 @@ A Flask website that monitors NHS Drug Tariff reimbursement prices for Dr. Reddy
 - A free service goes to sleep after 15 minutes without traffic, so the first visit afterwards takes about a minute to wake.
 - The free plan has no persistent disk. Uploaded files and the database are lost whenever the service restarts or redeploys, and the site goes back to sample data. To keep data, use a paid plan, add a disk in `render.yaml` and set `DATA_DIR` to its mount path (see the comments in that file).
 
-## Run locally
-
-```
-pip install -r requirements.txt
-ADMIN_TOKEN=choose-a-token python app.py
-```
-Open http://localhost:5000. Data is stored in `data/` unless `DATA_DIR` is set.
 
 ## Things to check
 
